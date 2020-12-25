@@ -1,5 +1,5 @@
 {
-  "name": "odoos-api",
+  "name": "apidoo",
   "version": "1.0.0",
   "description": "Odoo API",
   "main": "index.js",
