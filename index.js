@@ -1,1 +1,1 @@
-module.exports = require('./lib/Odoo.js');
+module.exports = require('./lib/Odoo');
