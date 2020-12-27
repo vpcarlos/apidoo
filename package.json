@@ -1,6 +1,6 @@
 {
   "name": "apidoo",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Odoo API",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,11 @@
   },
   "author": "Carlos Valdivia",
   "license": "MIT",
-  "keywords": ["odoo", "openerp", "jsonrpc"],
+  "keywords": [
+    "odoo",
+    "openerp",
+    "jsonrpc"
+  ],
   "dependencies": {
     "node-fetch": "^2.6.1"
   }
