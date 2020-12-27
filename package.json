@@ -12,6 +12,7 @@
   },
   "author": "Carlos Valdivia",
   "license": "MIT",
+  "keywords": ["odoo", "openerp", "jsonrpc"],
   "dependencies": {
     "node-fetch": "^2.6.1"
   }
