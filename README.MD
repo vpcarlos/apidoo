@@ -8,15 +8,97 @@ Using npm:
 ```shell
 $npm i apidoo --save
 ```
+# Important
+**If you are working with js framworks (react, vue, angular, svelte, etc) you need to integrate proxys**
+<details markdown='1' open>
+<summary>Vue JS</summary>
+
+- Add the following 3 routes to the file **vite.config.js**
+
+```javascript
+export default defineConfig({
+  ...
+  server: {
+    ...
+    proxy: {
+      ...
+      '/web/session/authenticate': {
+        target: 'http://localhost:8069/web/session/authenticate',
+        rewrite: (path) => path.replace('/web/session/authenticate', ''),
+      },
+      '/web/session/get_session_info': {
+        target: 'http://localhost:8069/web/session/get_session_info',
+        rewrite: (path) => path.replace('/web/session/get_session_info', ''),
+      },
+      '/web/dataset/call_kw': {
+        target: 'http://localhost:8069/web/dataset/call_kw',
+        rewrite: (path) => path.replace('/web/dataset/call_kw', ''),
+      },
+     ...
+    }
+  }
+})
+```
+</details>
+
+<details>
+<summary>React</summary>
+
+- Install the package http-proxy-middleware (<code>$npm i http-proxy-middleware</code>)
+- Create the file **setupProxy.js** inside src/ folder
+- Restart the server
+
+```javascript
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+const session_info = {
+    target: 'http://localhost:8069',
+    changeOrigin: true
+}
+const authenticate = {
+    target: 'http://localhost:8069',
+    changeOrigin: true
+}
+const call_kw = {
+    target: 'http://localhost:8069',
+    changeOrigin: true
+}
+
+module.exports = function(app) {
+  app.use(
+    '/web/session/get_session_info',
+    createProxyMiddleware(session_info)
+  );
+
+  app.use(
+    '/web/session/authenticate',
+    createProxyMiddleware(session_info)
+  );
+  app.use(
+    '/web/dataset/call_kw', 
+    createProxyMiddleware(call_kw)
+  );
+};
+```
+</details>
+
+</details>
+
+<details>
+<summary>Angular</summary>
+
+- WIP
+
+</details>
 
 # Usage
 
 ```javascript
-    // Establish connection
-    let odoo = new Odoo('http://localhost:8069', 'db', 'user', 'password')
+    // You should pass an empty string as url because you already define the url in the proxy configuration
+    let odoo = new Odoo('', 'db', 'user', 'password')
     await odoo.connect()
 
-    // Search partners
+    // Search all partners
     let partner = odoo.env('res.partner')
     let response = await parter.search()
 ```
@@ -25,7 +107,7 @@ $npm i apidoo --save
 ## Env and Context
 ```javascript
     // New res partner model env
-    let partner = odoo.api.env('res.partner')
+    let partner = odoo.env('res.partner')
 
     // Search partners with a context
     let partner_ids = await partner.with_context({lang : 'es_ES'}).search()
@@ -35,159 +117,82 @@ $npm i apidoo --save
 ## Search 
 
 ```javascript
-    let partner = odoo.api.env('res.partner')
+    let partner = odoo.env('res.partner')
 
-    /* Search partner with a domain and attributes */
-    let partner_ids = await partner.search([[['active', '=', false]]], { limit: 2, offset: 1, order: 'name,email desc'})
-    // [6,7]
+    // Search partner with a domain and attributes
+    let partner_ids = await partner.search(
+      [['active', '=', false]], 
+      { limit: 2, offset: 1, order: 'name,email desc'}
+    )
 
-    // Search all partners
-    let partner_ids = await partner.search()
-    // [5, 6, 7, 8]
 ```
 
 ## Search Count
 
 ```javascript
-    let partner = odoo.api.env('res.partner')
+    let partner = odoo.env('res.partner')
 
      // Count partners with a domain
-    let partners_count = await partner.search_count([[['active', '=', false]]])
-    // 4
+    let partners_count = await partner.search_count([
+      ['active', '=', false]]
+    )
+
 ```
 ## Read
 
 ```javascript
-    let partner = odoo.api.env('res.partner')
+    let partner = odoo.env('res.partner')
 
-    // Search partners
-    let partner_ids = await partner.search([[['active', '=', false]]])
-    // [4, 6]
+    // Search ative partners ids
+    let partner_ids = await partner.search(
+      [['active', '=', false]]
+    )
 
     // Read fields name and title from partner_ids
-    let partners = await partner.read([partner_ids], { fields: ['name', 'title'] })
-    /* 
-    [{
-        id: 6, 
-        name: 'Portal User Template', 
-        title: false 
-    }, 
-    { 
-        id: 4, 
-        name: 'Public user', 
-        title: false
-    }]
-    */
+    let partners = await partner.read(
+      [partner_ids],
+      { fields: ['name', 'title']}
+    )
+
 ```
 
 ## Search Read
 
 ```javascript
-    let partner = odoo.api.env('res.partner')
+    let partner = odoo.env('res.partner')
 
     // Search partner with a domain and get custom fields. This is a mix from Search and Read
-    let categories = await partner.search_read([[['active', '=', false]]], { fields: ['name'] })
-      /* 
-    [{
-        id: 6, 
-        name: 'Portal User Template', 
-    }, 
-    { 
-        id: 4, 
-        name: 'Public user', 
-    }]
-    */
+    let partners = await partner.search_read(
+      [['active', '=', false]], 
+      { fields: ['name'] }
+    )
+  
 ```
 
 ## Get Fields
 
 ```javascript
+    let partner = odoo.env('res.partner')
+
+    // Get all fields from res.partner model
     let partner_fields_all = await partner.get_fields()
-    /*
-    { 
-      name:
-        { 
-          type: 'char',
-          change_default: false,
-          company_dependent: false,
-          depends: [],
-          manual: false,
-          readonly: false,
-          required: true,
-          searchable: true,
-          sortable: true,
-          store: true,
-          string: 'Name',
-          translate: true,
-          trim: true 
-        },
-      color:
-        { 
-          type: 'integer',
-          change_default: false,
-          company_dependent: false,
-          depends: [],
-          group_operator: 'sum',
-          manual: false,
-          readonly: false,
-          required: false,
-          searchable: true,
-          sortable: true,
-          store: true,
-          string: 'Color Index' 
-        },
-     ...
-    }
-    */
-    let partner_fields = await partner.get_fields(['title'], { attributes: ['type', 'string'] })
-    /*
-    { name: 
-      { 
-        type: 'char', 
-        string: 'Name' 
-      } 
-    }
-    */
+
+    // Get the the type ad string attributes from title field from res.partner model 
+    let partner_fields = await partner.get_fields(
+      ['title'],
+      { attributes: ['type', 'string'] }
+    )
+   
 ```
 
-# Auth
+# Session
 
 ```javascript
- // Establish connection
-    let odoo = new Odoo('http://localhost:8069', 'db', 'user', 'password')
+
+    // Get the session info
+    let odoo = new Odoo('', 'db', 'user', 'password')
     await odoo.connect()
 
     odoo.auth.session_info
 
-    /* 
-    { uid: 2,
-     is_system: true,
-     is_admin: true,
-     user_context: { lang: 'es_ES', tz: false, uid: 2 },
-     db: 'master13',
-     server_version: '13.0+e',
-     server_version_info: [ 13, 0, 0, 'final', 0, 'e' ],
-     name: 'Administrator',
-     username: 'admin',
-     partner_display_name: 'Administrator',
-     company_id: 1,
-     partner_id: 3,
-     'web.base.url': 'http://localhost:8069',
-     user_companies: { current_company: [Array], allowed_companies: [Array] },
-     currencies: { '1': [Object], '2': [Object] },
-     show_effect: 'True',
-     display_switch_company_menu: false,
-     cache_hashes:
-      { load_menus: '76b377632c2c9a04f80d9aeb4684465d3723158d',
-        qweb: 'e45135167b9ad39817c3dd4710592ad01a61d62c',
-        translations: '336e321c0ee524b1afd1aa73253cf3e2bd81be2b' },
-     company_currency_id: 1,
-     warning: 'admin',
-     expiration_date: false,
-     expiration_reason: false,
-     web_tours: [],
-     out_of_office_message: false,
-     map_box_token: false,
-     session_id: 'b45c6bc82fd9f0a0494f641b497983018c1e16d6' } }
-     */
 ```
