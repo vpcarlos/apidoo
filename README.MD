@@ -95,7 +95,8 @@ module.exports = function(app) {
 
 ```javascript
     // You should pass an empty string as url because you already define the url in the proxy configuration
-    let odoo = new Odoo('', 'db', 'user', 'password')
+    import Apidoo from 'apidoo'
+    let odoo = new Apidoo('', 'db', 'user', 'password')
     await odoo.connect()
 
     // Search all partners
@@ -188,9 +189,9 @@ module.exports = function(app) {
 # Session
 
 ```javascript
-
+    import Apidoo from 'apidoo'
     // Get the session info
-    let odoo = new Odoo('', 'db', 'user', 'password')
+    let odoo = new Apidoo('', 'db', 'user', 'password')
     await odoo.connect()
 
     odoo.auth.session_info
